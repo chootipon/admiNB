@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เพิ่มคอร์ส - Admin คอร์สเบเกอรี่</title>
+
+  <!-- Google Font Prompt -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #ec4899;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3);
+    }
+
+    /* Toggle switch style */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 9999px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #ec4899;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-rose-100 via-pink-50 to-amber-50 min-h-screen p-6">
+
+  <!-- Header -->
+  <header class="max-w-5xl mx-auto mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-extrabold text-pink-700 drop-shadow-sm tracking-tight">
+      เพิ่ม/แก้ไข
+    </h1>
+    <a href="manage.html" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-pink-600 border border-pink-400 hover:bg-pink-50 rounded-lg transition duration-300 shadow">
+      ← กลับหน้าหลัก
+    </a>
+  </header>
+
+  <!-- Toggle form button -->
+  <div class="max-w-5xl mx-auto mb-4 text-right">
+    <button id="toggleFormBtn" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-full shadow transition-all duration-300">
+      ➕ เพิ่มคอร์ส
+    </button>
+  </div>
+
+  <!-- Add Course Form -->
+  <div id="formContainer" class="max-w-5xl mx-auto bg-white/70 backdrop-blur p-6 rounded-2xl shadow-xl hidden transition-all duration-500 border border-pink-100">
+    <h2 class="text-3xl font-bold mb-4 text-pink-600">🎓 เพิ่มคอร์สใหม่</h2>
+    <form id="addCourseForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <input type="text" id="title" placeholder="ชื่อคอร์ส" class="form-input" required />
+      <input type="text" id="description" placeholder="รายละเอียดคอร์ส" class="form-input" required />
+      <input type="url" id="image" placeholder="ลิงก์รูปภาพ" class="form-input" required />
+      <input type="url" id="link" value="https://foul-sharp-church.glitch.me/" class="form-input bg-gray-100 text-gray-600" readonly required />
+      <input type="number" id="price" placeholder="ราคา (บาท)" class="form-input" min="0" step="0.01" required />
+      <select id="active" class="form-input" required>
+        <option value="true">เปิด</option>
+        <option value="false">ปิด</option>
+      </select>
+      <input type="text" id="category" placeholder="หมวดหมู่" class="form-input" required />
+      <input type="text" id="keyword" placeholder="คีย์เวิร์ด" class="form-input" required />
+      <div class="md:col-span-2 text-right">
+        <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2 rounded-lg shadow transition-all duration-300">
+          💾 บันทึก
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Course List -->
+  <div class="max-w-5xl mx-auto mt-6">
+    <h3 class="text-2xl font-semibold mb-5 text-pink-700">📋 รายการคอร์ส</h3>
+    <ul id="courseList" class="space-y-5"></ul>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+    getAuth, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4ZWlAk3456D_IsB7Zk0ud23gTr4bRbxg",
+      authDomain: "baking-course-register.firebaseapp.com",
+      projectId: "baking-course-register",
+      storageBucket: "baking-course-register.appspot.com",
+      messagingSenderId: "118926242712",
+      appId: "1:118926242712:web:039855058a8fb72131b1ed",
+      measurementId: "G-C0XVB5Q6FB"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const courseRef = collection(db, "courses");
+    const auth = getAuth(app); // เพิ่ม auth
+
+    const addCourseForm = document.getElementById("addCourseForm");
+    const courseList = document.getElementById("courseList");
+    const formContainer = document.getElementById("formContainer");
+    const toggleFormBtn = document.getElementById("toggleFormBtn");
+
+    let currentEditId = null;
+    
+     // 🔐 ตรวจสอบสถานะล็อกอิน
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      alert("กรุณาเข้าสู่ระบบก่อนใช้งานหน้านี้");
+      window.location.href = "index.html"; // ไปยังหน้าล็อกอินถ้ายังไม่ล็อกอิน
+    }
+  });
+
+    function resetForm() {
+      addCourseForm.reset();
+      currentEditId = null;
+      addCourseForm.querySelector("button[type=submit]").textContent = "💾 บันทึก";
+      
+    }
+
+    // Toggle form แสดง/ซ่อน
+    toggleFormBtn.addEventListener("click", () => {
+      if (formContainer.classList.contains("hidden")) {
+        formContainer.classList.remove("hidden");
+        toggleFormBtn.textContent = "❌ ยกเลิกเพิ่มคอร์ส";
+        resetForm();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        formContainer.classList.add("hidden");
+        toggleFormBtn.textContent = "➕ เพิ่มคอร์ส";
+        resetForm();
+      }
+    });
+
+    // ฟังค์ชันเพิ่ม/แก้ไขคอร์ส
+    addCourseForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const image = document.getElementById("image").value.trim();
+      const link = document.getElementById("link").value.trim();
+      const price = parseFloat(document.getElementById("price").value);
+      const active = document.getElementById("active").value === "true";
+      const category = document.getElementById("category").value.trim();
+      const keyword = document.getElementById("keyword").value.trim();
+
+      if (!title || !description || !image || !link || isNaN(price) || !category || !keyword) {
+        alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+        return;
+      }
+
+      if (currentEditId) {
+        const courseDocRef = doc(db, "courses", currentEditId);
+        await updateDoc(courseDocRef, { title, description, image, link, price, active, category, keyword });
+        resetForm();
+        alert("แก้ไขคอร์สเรียบร้อย");
+      } else {
+        await addDoc(courseRef, { title, description, image, link, price, active, category, keyword });
+        addCourseForm.reset();
+        alert("เพิ่มคอร์สเรียบร้อย");
+      }
+    });
+
+    // แสดงรายการคอร์สแบบสด ๆ
+    onSnapshot(courseRef, (snapshot) => {
+      courseList.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const course = docSnap.data();
+        const li = document.createElement("li");
+        li.className = "bg-white p-4 rounded-xl shadow-md flex gap-4 items-center";
+
+        li.innerHTML = `
+          <img src="${course.image || 'https://via.placeholder.com/96x96?text=No+Image'}" alt="${course.title}" class="w-24 h-24 object-cover rounded-md" />
+          <div class="flex-1">
+            <h4 class="text-lg font-semibold">${course.title} <span class="text-sm font-normal text-amber-600">(${course.category})</span></h4>
+            <p class="text-sm text-gray-600">${course.description}</p>
+            <p class="text-sm mt-1">💰 ราคา: <strong>${course.price}฿</strong></p>
+            <a href="${course.link}" class="text-rose-600 hover:underline text-sm" target="_blank" rel="noopener">🔗 ลิงก์สมัครคอร์ส</a>
+            <p class="text-xs text-gray-400 mt-1">🔍 คีย์เวิร์ด: ${course.keyword}</p>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <label class="switch" title="เปิด/ปิดคอร์ส">
+              <input type="checkbox" class="toggle-active-switch" data-id="${docSnap.id}" ${course.active ? "checked" : ""} />
+              <span class="slider"></span>
+            </label>
+            <span class="text-sm font-medium ${course.active ? 'text-green-600' : 'text-red-600'}">${course.active ? 'เปิด' : 'ปิด'}</span>
+            <button onclick="editCourse('${docSnap.id}')" class="text-green-600 hover:underline text-sm">✏️ แก้ไข</button>
+            <button onclick="deleteCourse('${docSnap.id}')" class="text-red-500 hover:underline text-sm">🗑️ ลบ</button>
+          </div>
+        `;
+
+        courseList.appendChild(li);
+      });
+
+      // ผูก event listener ให้ toggle switch หลังโหลดข้อมูล
+      document.querySelectorAll(".toggle-active-switch").forEach((el) => {
+        el.addEventListener("change", async (ev) => {
+          const id = ev.target.dataset.id;
+          const isActive = ev.target.checked;
+          const courseDocRef = doc(db, "courses", id);
+          try {
+            await updateDoc(courseDocRef, { active: isActive });
+            ev.target.nextElementSibling.textContent = isActive ? "เปิด" : "ปิด";
+            ev.target.nextElementSibling.className = "text-sm font-medium " + (isActive ? "text-green-600" : "text-red-600");
+          } catch (error) {
+            alert("เกิดข้อผิดพลาดในการอัปเดตสถานะคอร์ส");
+            ev.target.checked = !isActive; // กลับสถานะเดิม
+          }
+        });
+      });
+    });
+
+    // ฟังก์ชันแก้ไข
+    window.editCourse = async (id) => {
+      const docRef = doc(db, "courses", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        currentEditId = id;
+        document.getElementById("title").value = data.title;
+        document.getElementById("description").value = data.description;
+        document.getElementById("image").value = data.image;
+        document.getElementById("link").value = data.link;
+        document.getElementById("price").value = data.price;
+        document.getElementById("active").value = data.active ? "true" : "false";
+        document.getElementById("category").value = data.category;
+        document.getElementById("keyword").value = data.keyword;
+
+        formContainer.classList.remove("hidden");
+        toggleFormBtn.textContent = "❌ ยกเลิกเพิ่มคอร์ส";
+        addCourseForm.querySelector("button[type=submit]").textContent = "💾 บันทึกการแก้ไข";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        alert("ไม่พบข้อมูลคอร์สนี้");
+      }
+    };
+
+    // ฟังก์ชันลบ
+    window.deleteCourse = async (id) => {
+      if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบคอร์สนี้?")) {
+        try {
+          await deleteDoc(doc(db, "courses", id));
+          alert("ลบคอร์สเรียบร้อยแล้ว");
+        } catch (error) {
+          alert("เกิดข้อผิดพลาดในการลบคอร์ส");
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>

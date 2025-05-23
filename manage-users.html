@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>จัดการผู้สมัคร - Admin คอร์สเบเกอรี่</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #fcf9fa; /* สีพื้นหลังอ่อนลงไปอีก */
+      font-family: 'Prompt', sans-serif;
+      color: #6a1b9a; /* สีข้อความหลัก ยังคงเดิม */
+    }
+
+    /* Header adjustments */
+    .app-header {
+        background-color: #fff5f8; /* สีชมพูอ่อนมากสำหรับ header */
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #ffeef2; /* สีขอบ header อ่อนลง */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01); /* ลดความเข้มเงาอีก */
+    }
+    .app-header .h4 {
+        color: #ad1457; /* สีหัวข้อหลัก ยังคงเดิม */
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    /* Custom Ghost Button for "กลับหน้าหลัก" */
+    .btn-ghost-pink {
+        background-color: transparent;
+        color: #ec407a; /* สีเดียวกับปุ่ม FC */
+        border: 1px solid #ffd1e0; /* ขอบปุ่มอ่อนลงอีก */
+        border-radius: 2rem;
+        padding: 0.5rem 1.25rem;
+        font-weight: 400;
+        transition: all 0.2s ease-in-out;
+        box-shadow: none;
+    }
+    .btn-ghost-pink:hover {
+        background-color: #fff0f5; /* สีชมพูอ่อนขึ้นเมื่อ hover */
+        color: #d81b60; /* สีเข้มขึ้นเมื่อ hover */
+        border-color: #ff99bb; /* ขอบเข้มขึ้นเมื่อ hover */
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03); /* ลดความเข้มเงาเมื่อ hover */
+    }
+    .btn-ghost-pink .bi {
+        margin-right: 0.5rem;
+    }
+
+    /* Card adjustments for minimal look */
+    .card {
+      border-radius: 1rem;
+      border: none;
+      background-color: #ffffff;
+      box-shadow: 0 3px 10px rgba(255, 182, 193, 0.05); /* ลดความเข้มของเงาอีก */
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.5s ease-out, transform 0.5s ease-out; /* เพิ่ม transition สำหรับ animation */
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(255, 182, 193, 0.1); /* ลดความเข้มเงาเมื่อ hover */
+    }
+
+    /* Animation class for deleting */
+    .card.fade-out-up {
+        opacity: 0;
+        transform: translateY(-20px); /* เลื่อนขึ้นเล็กน้อยขณะจางหาย */
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      color: #ad1457;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    .card-title .bi {
+        font-size: 1.4rem;
+        margin-right: 0.6rem;
+        color: #ec407a; /* สีไอคอนหัวข้อ ยังคงเดิม */
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      margin-bottom: 0.6rem;
+      color: #6a1b9a;
+      display: flex;
+      align-items: flex-start;
+    }
+    .card p strong {
+      color: #ad1457; /* สีข้อความ label ยังคงเดิม */
+      min-width: 70px;
+      flex-shrink: 0;
+      margin-right: 0.5rem;
+    }
+    .card p .bi {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+        color: #ffb6c1; /* สีไอคอนในข้อมูล อ่อนลงไปอีก */
+    }
+
+    /* Input and Select styling within card */
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border-color: #ffe6f0; /* สีขอบอ่อนลงไปอีก */
+        font-size: 0.9rem;
+        color: #6a1b9a;
+        background-color: #fffdfd; /* สีพื้นหลัง input/select อ่อนลงไปอีก */
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #ffb3d4; /* สีขอบเมื่อ focus อ่อนลง */
+        box-shadow: 0 0 0 0.25rem rgba(255, 192, 203, 0.1); /* ลดความเข้มเงาเมื่อ focus */
+    }
+
+    /* Button adjustments */
+    .d-grid button {
+        margin-top: 0.8rem;
+    }
+
+    .btn-save {
+      background-color: #ec407a; /* สีปุ่มบันทึก ยังคงเดิม */
+      color: white;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 500;
+      padding: 0.6rem 1rem;
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+      box-shadow: 0 2px 5px rgba(236, 64, 122, 0.1); /* ลดความเข้มเงา */
+    }
+    .btn-save:hover {
+      background-color: #d81b60;
+      transform: translateY(-1px);
+    }
+
+    .btn-delete {
+      background-color: #fff5f8; /* สีพื้นหลังปุ่มลบ อ่อนลงไปอีก */
+      color: #d32f2f; /* สีแดงเข้ม ยังคงเดิม */
+      border: 1px solid #ffeef2; /* ขอบปุ่มลบ อ่อนลงไปอีก */
+      border-radius: 0.75rem;
+      font-weight: 500;
+      padding: 0.6rem 1rem;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02); /* ลดความเข้มเงา */
+    }
+    .btn-delete:hover {
+      background-color: #ffc2d4; /* สีพื้นหลังเมื่อ hover อ่อนลง */
+      color: #fff;
+      border-color: #ff99bb; /* ขอบเข้มขึ้นเมื่อ hover */
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* ลดความเข้มเงาเมื่อ hover */
+    }
+
+    /* Badge adjustments */
+    .badge {
+      font-size: 0.8rem;
+      padding: 0.4em 0.7em;
+      border-radius: 1rem !important;
+      font-weight: 500;
+    }
+    /* ใช้สีที่สอดคล้องกับ Bootstrap แต่ซอฟต์ลง */
+    .badge.bg-success { background-color: #e0f2e0 !important; color: #3c763d !important; } /* เขียวอ่อนมาก */
+    .badge.bg-danger { background-color: #ffe0e0 !important; color: #a94442 !important; } /* แดงอ่อนมาก */
+    .badge.bg-warning { background-color: #fff8e1 !important; color: #8a6d3b !important; } /* ส้มอ่อนมาก */
+
+    /* Toast Notification Styling */
+    .toast-container {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        z-index: 1050;
+    }
+    .toast {
+        background-color: #e0f2e0; /* สีพื้นหลังเขียวอ่อนมาก */
+        color: #3c763d; /* สีข้อความเขียวเข้ม */
+        border: 1px solid #d4edda;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.1); /* ลดความเข้มเงา */
+    }
+    .toast-header {
+        background-color: transparent;
+        color: #3c763d;
+        border-bottom: none;
+    }
+    .toast-body {
+        padding-top: 0;
+        padding-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header d-flex justify-content-between align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+        <h1 class="h4 fw-bold">👥 จัดการผู้สมัคร</h1>
+        <a href="manage.html" class="btn btn-ghost-pink">
+            <i class="bi bi-arrow-left-circle-fill"></i>กลับหน้าหลัก
+        </a>
+    </div>
+  </header>
+
+  <main class="container my-5">
+    <div id="registrationList" class="row g-4"></div>
+  </main>
+
+  <div class="toast-container">
+    <div class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-check-circle-fill me-2"></i> ลบข้อมูลสำเร็จ!
+        </div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4ZWlAk3456D_IsB7Zk0ud23gTr4bRbxg",
+      authDomain: "baking-course-register.firebaseapp.com",
+      projectId: "baking-course-register",
+      storageBucket: "baking-course-register.appspot.com",
+      messagingSenderId: "118926242712",
+      appId: "1:118926242712:web:039855058a8fb72131b1ed",
+      measurementId: "G-C0XVB5Q6FB"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const registrationsRef = collection(db, "course_registrations");
+    const registrationList = document.getElementById("registrationList");
+
+    const getStatusBadge = (status) => {
+      switch (status) {
+        case "approved": return `<span class="badge bg-success rounded-pill">✔️ อนุมัติ</span>`;
+        case "rejected": return `<span class="badge bg-danger rounded-pill">❌ ปฏิเสธ</span>`;
+        default: return `<span class="badge bg-warning text-dark rounded-pill">⏳ รอดำเนินการ</span>`;
+      }
+    };
+
+    const formatDate = (value) => {
+      if (!value) return "-";
+      if (value.toDate) value = value.toDate(); // Convert Firebase Timestamp to Date object
+      const d = new Date(value);
+      if (isNaN(d)) return "-";
+      return d.toLocaleDateString("th-TH", {
+        year: "numeric", month: "short", day: "numeric"
+      });
+    };
+
+    function loadRegistrations() {
+      onSnapshot(registrationsRef, (snapshot) => {
+        registrationList.innerHTML = "";
+        snapshot.forEach(docSnap => {
+          const reg = docSnap.data();
+
+          const col = document.createElement("div");
+          col.className = "col-12 col-md-6 col-lg-4";
+          col.id = `card-col-${docSnap.id}`; // Add ID to the column for animation
+
+          col.innerHTML = `
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-person-fill"></i>${reg.fullname || "-"}</h5>
+                <p><strong><i class="bi bi-telephone-fill"></i>โทร:</strong> ${reg.phone || "-"}</p>
+                <p><strong><i class="bi bi-envelope-fill"></i>อีเมล:</strong> ${reg.email || "-"}</p>
+                <p><strong><i class="bi bi-cake-fill"></i>คอร์ส:</strong> ${reg.courseName || "-"}</p>
+                <p><strong><i class="bi bi-currency-dollar"></i>ราคา:</strong> ${reg.coursePrice ? reg.coursePrice + " บาท" : "-"}</p>
+                <p><strong><i class="bi bi-calendar-check-fill"></i>วันที่เรียน:</strong> 
+                  <input type="date" value="${reg.date || ""}" onchange="updateDate('${docSnap.id}', this.value)" class="form-control form-control-sm mt-1" />
+                </p>
+                <p><strong><i class="bi bi-info-circle-fill"></i>สถานะ:</strong> ${getStatusBadge(reg.status)}</p>
+                <p><strong><i class="bi bi-clock-fill"></i>สมัครเมื่อ:</strong> ${formatDate(reg.createdAt)}</p>
+                <p><strong><i class="bi bi-sticky-fill"></i>หมายเหตุ:</strong> ${reg.note || "-"}</p>
+
+                <div class="d-grid gap-2 mt-3">
+                  <select id="status-${docSnap.id}" class="form-select form-select-sm">
+                    <option value="pending" ${reg.status === 'pending' ? 'selected' : ''}>⏳ รอดำเนินการ</option>
+                    <option value="approved" ${reg.status === 'approved' ? 'selected' : ''}>✔️ อนุมัติ</option>
+                    <option value="rejected" ${reg.status === 'rejected' ? 'selected' : ''}>❌ ปฏิเสธ</option>
+                  </select>
+                  <button onclick="updateApproval('${docSnap.id}', document.getElementById('status-${docSnap.id}').value)" class="btn btn-save btn-sm">💾 บันทึกสถานะ</button>
+                  <button onclick="deleteRegistration('${docSnap.id}')" class="btn btn-delete btn-sm">🗑️ ลบข้อมูล</button>
+                </div>
+              </div>
+            </div>
+          `;
+          registrationList.appendChild(col);
+        });
+      });
+    }
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        loadRegistrations();
+      } else {
+        alert("กรุณาเข้าสู่ระบบก่อนใช้งานหน้านี้");
+        window.location.href = "index.html";
+      }
+    });
+
+    window.updateDate = async (id, newDate) => {
+      try {
+        const docRef = doc(db, "course_registrations", id);
+        await updateDoc(docRef, { date: newDate });
+        // Optional: Show success feedback if needed for date update
+      } catch (e) {
+        console.error("อัปเดตวันที่ล้มเหลว:", e);
+        alert("เกิดข้อผิดพลาดในการอัปเดตวันที่");
+      }
+    };
+
+    window.updateApproval = async (id, newStatus) => {
+      try {
+        const docRef = doc(db, "course_registrations", id);
+        await updateDoc(docRef, { status: newStatus });
+        // Optional: Refresh the specific card or show a success message
+      } catch (e) {
+        console.error("อัปเดตสถานะล้มเหลว:", e);
+        alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
+      }
+    };
+
+    window.deleteRegistration = async (id) => {
+      if (confirm("คุณแน่ใจว่าจะลบข้อมูลนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้")) {
+        try {
+          await deleteDoc(doc(db, "course_registrations", id));
+
+          // ** Animation and Toast Notification **
+          const cardCol = document.getElementById(`card-col-${id}`);
+          if (cardCol) {
+            cardCol.classList.add('fade-out-up'); // Add animation class
+            cardCol.addEventListener('transitionend', () => {
+              cardCol.remove(); // Remove element after animation
+            }, { once: true }); // Ensure listener runs only once
+
+            // Show Bootstrap Toast
+            const toastElement = document.getElementById('successToast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+          }
+
+        } catch (e) {
+          console.error("ลบข้อมูลล้มเหลว:", e);
+          alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+        }
+      }
+    };
+  </script>
+</body>
+</html>

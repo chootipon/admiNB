@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <title>ตารางปฏิทินการสอนคอร์ส</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #fff8f8;
+            font-family: 'Prompt', sans-serif;
+            color: #6a1b9a;
+        }
+
+        .card-calendar {
+            background: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(241, 85, 120, 0.1);
+            padding: 1rem;
+        }
+
+        .fc {
+            background-color: #fff0f6;
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ec407a;
+        }
+
+        .fc-daygrid-event {
+            background-color: #f48fb1;
+            border: none;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .fc-button {
+            background-color: #ec407a !important;
+            border: none !important;
+            color: white !important;
+            border-radius: 0.5rem !important;
+            font-weight: bold;
+        }
+
+        .fc-button:hover {
+            background-color: #d81b60 !important;
+        }
+
+        h2,
+        h4 {
+            color: #ad1457;
+        }
+
+        .fc .fc-button {
+            background-color: #ec407a !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 2rem !important;
+            margin: 0 5px !important;
+            padding: 0.4rem 1rem !important;
+            font-weight: 600;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .fc .fc-button:hover {
+            background-color: #d81b60 !important;
+        }
+
+        .fc-header-toolbar {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ปรับให้ปฏิทินเล็กลง */
+        .fc .fc-daygrid-day-frame {
+            padding: 2px !important;
+            min-height: 40px !important;
+        }
+
+        .fc .fc-daygrid-day-number {
+            font-size: 0.75rem;
+            padding: 2px;
+        }
+
+        .fc-daygrid-event {
+            font-size: 0.7rem;
+            padding: 1px 3px;
+        }
+
+        /* รูปใน modal */
+        #modalCourseImage {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-right: 1rem;
+            display: none; /* ซ่อนไว้ก่อน ถ้าไม่มีรูปจะไม่แสดง */
+        }
+
+        .modal-body.d-flex {
+            display: flex;
+            align-items: center;
+        }
+
+        .bg-pink {
+            background-color: #fce4ec; /* สีชมพูอ่อนสำหรับ header modal */
+            color: #ad1457 !important; /* สีข้อความเข้มขึ้น */
+        }
+
+        .btn-close-white {
+            filter: invert(30%) sepia(80%) saturate(7000%) hue-rotate(330deg) brightness(80%) contrast(120%); /* ทำให้ icon ปิดเป็นสีชมพูเข้ม */
+        }
+
+        /* --- สไตล์สำหรับ Course Cards --- */
+        .course-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* ปรับขนาด card ให้เหมาะสม */
+            gap: 1.5rem;
+            padding: 1rem;
+            background-color: #fff0f6; /* สีเดียวกับปฏิทิน */
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(241, 85, 120, 0.08);
+        }
+
+        .course-card {
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid #ffebee; /* ขอบบางๆ */
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .course-card h5 {
+            color: #ec407a;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .course-card p {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: #6a1b9a;
+            display: flex;
+            align-items: center;
+        }
+
+        .course-card p strong {
+            color: #ad1457;
+            margin-right: 0.4rem;
+        }
+
+        .course-card .card-icon {
+            color: #f48fb1; /* สีไอคอน */
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .course-card img {
+            width: 100%; /* ทำให้รูปเต็มความกว้างของ card */
+            height: 150px; /* กำหนดความสูง */
+            object-fit: cover; /* ครอบคลุมพื้นที่ */
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none; /* ซ่อนไว้ก่อน ถ้าไม่มีรูปจะไม่แสดง */
+        }
+
+        .course-card img.has-image {
+            display: block; /* แสดงเมื่อมีรูปภาพ */
+        }
+
+        /* --- สไตล์สำหรับปุ่ม "กลับหน้าแรก" ด้านบน --- */
+        .btn-primary-custom {
+            background-color: #fce4ec; /* สีชมพูอ่อนเหมือน bg-pink */
+            color: #ad1457; /* สีเดียวกับ h2, h4 */
+            border: 1px solid #f8bbd0; /* ขอบสีเข้มขึ้นเล็กน้อย */
+            border-radius: 2rem; /* โค้งมน */
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #f8bbd0; /* เข้มขึ้นเมื่อ hover */
+            color: #880e4f; /* ข้อความเข้มขึ้น */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container my-5">
+        <div class="text-start mb-4"> <a href="manage.html" class="btn btn-primary-custom">
+                <i class="bi bi-arrow-left-circle me-2"></i>กลับหน้าแรก
+            </a>
+        </div>
+
+        <h2 class="text-center mb-4"><i class="bi bi-calendar-event-fill me-2"></i>ตารางปฏิทินการสอนคอร์ส</h2>
+
+        <div class="card-calendar mb-5">
+            <div id="calendar"></div>
+        </div>
+
+        <h4 class="mb-3"><i class="bi bi-list-check me-2"></i>รายชื่อคอร์สที่อนุมัติแล้ว</h4>
+        <div class="course-card-grid mb-4" id="course-card-list">
+            </div>
+
+        </div>
+
+    <div class="modal fade" id="eventDetailModal" tabindex="-1" aria-labelledby="eventDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-pink text-white">
+                    <h5 class="modal-title d-flex align-items-center" id="eventDetailModalLabel">
+                        <i class="bi bi-info-circle me-2"></i>รายละเอียดคอร์ส
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                </div>
+                <div class="modal-body d-flex">
+                    <img id="modalCourseImage" src="" alt="รูปคอร์ส" />
+                    <div>
+                        <p><strong>ชื่อคอร์ส:</strong> <span id="modalCourseName"></span></p>
+                        <p><strong>ชื่อผู้เรียน:</strong> <span id="modalStudentName"></span></p>
+                        <p><strong>วันที่เรียน:</strong> <span id="modalStudyDate"></span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        // กำหนดค่า Firebase Config ของคุณ
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4ZWlAk3456D_IsB7Zk0ud23gTr4bRbxg", // แทนที่ด้วย API Key ของคุณ
+            authDomain: "baking-course-register.firebaseapp.com",
+            projectId: "baking-course-register",
+            storageBucket: "baking-course-register.appspot.com",
+            messagingSenderId: "118926242712",
+            appId: "1:118926242712:web:039855058a8fb72131b1ed"
+        };
+
+        // เริ่มต้น Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadApprovedCourses() {
+            // ดึงเฉพาะคอร์สที่ status เป็น "approved"
+            const q = query(collection(db, "course_registrations"), where("status", "==", "approved"));
+            const regSnap = await getDocs(q);
+
+            const calendarEvents = [];
+            const courseCardList = document.getElementById("course-card-list");
+            courseCardList.innerHTML = ''; // เคลียร์ cards ก่อนเพิ่มข้อมูลใหม่
+
+            const eventDetailsMap = new Map(); // ใช้ Map เก็บรายละเอียด event สำหรับ modal
+
+            regSnap.forEach((doc) => {
+                const d = doc.data();
+                const courseName = d.courseName || "ไม่ระบุชื่อคอร์ส";
+                const studentName = d.fullname || "-";
+                const date = d.date;
+                const courseImage = d.imageurl || "";
+
+                if (date) {
+                    // เพิ่ม event ลง array สำหรับ FullCalendar
+                    calendarEvents.push({
+                        id: doc.id, // ใช้ doc.id เป็น id ของ event เพื่ออ้างอิง
+                        title: `${courseName} (${studentName})`,
+                        start: date,
+                        allDay: true // ถ้าเป็นคอร์สทั้งวัน ให้เป็น true
+                    });
+
+                    // เก็บรายละเอียดไว้ใน Map เพื่อดึงตอน eventClick
+                    eventDetailsMap.set(doc.id, {
+                        courseName,
+                        studentName,
+                        studyDate: date,
+                        courseImage
+                    });
+
+                    // สร้าง Course Card แทนการสร้างแถวในตาราง
+                    const card = document.createElement("div");
+                    card.classList.add("course-card");
+                    let imageHtml = '';
+                    if (courseImage) {
+                        imageHtml = `<img src="${courseImage}" alt="รูปคอร์ส" class="has-image" />`;
+                    }
+
+                    card.innerHTML = `
+                        ${imageHtml}
+                        <h5><i class="bi bi-book-fill card-icon"></i>${courseName}</h5>
+                        <p><strong><i class="bi bi-person-fill card-icon"></i>ผู้เรียน:</strong> ${studentName}</p>
+                        <p><strong><i class="bi bi-calendar-check-fill card-icon"></i>วันที่:</strong> ${new Date(date).toLocaleDateString("th-TH", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    `;
+                    courseCardList.appendChild(card);
+                }
+            });
+
+            // กำหนดค่าและ render FullCalendar
+            const calendarEl = document.getElementById("calendar");
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: "dayGridMonth",
+                events: calendarEvents,
+                headerToolbar: {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,listWeek",
+                },
+                locale: "th",
+                height: "auto",
+                eventClick: function (info) {
+                    // เมื่อคลิก event ให้แสดง modal
+                    const id = info.event.id;
+                    const detail = eventDetailsMap.get(id); // ดึงรายละเอียดจาก Map ด้วย id ของ event
+
+                    if (detail) {
+                        document.getElementById("modalCourseName").textContent = detail.courseName;
+                        document.getElementById("modalStudentName").textContent = detail.studentName;
+                        document.getElementById("modalStudyDate").textContent = new Date(detail.studyDate).toLocaleDateString("th-TH", { year: 'numeric', month: 'long', day: 'numeric' });
+
+                        const imgEl = document.getElementById("modalCourseImage");
+                        if (detail.courseImage) {
+                            imgEl.src = detail.courseImage;
+                            imgEl.style.display = "block"; // แสดงรูปภาพ
+                        } else {
+                            imgEl.style.display = "none"; // ซ่อนถ้าไม่มีรูป
+                        }
+
+                        const modal = new bootstrap.Modal(document.getElementById("eventDetailModal"));
+                        modal.show();
+                    }
+                },
+            });
+            calendar.render();
+        }
+
+        // เรียกฟังก์ชันเพื่อโหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', loadApprovedCourses);
+    </script>
+</body>
+</html>
